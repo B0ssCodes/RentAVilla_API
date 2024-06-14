@@ -2,6 +2,7 @@
 using RentAVilla_Utility;
 using RentAVilla_Web.Models;
 using RentAVilla_Web.Services.IServices;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -51,6 +52,11 @@ namespace RentAVilla_Web.Services
                 }
 
                 HttpResponseMessage apiResponse = null;
+
+                if (!string.IsNullOrEmpty(apiRequest.Token))
+                {
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiRequest.Token);
+                }
 
                 apiResponse = await client.SendAsync(message);
                 var apiContent = await apiResponse.Content.ReadAsStringAsync();

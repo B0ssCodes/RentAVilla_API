@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
@@ -88,7 +89,8 @@ namespace RentAVilla_VillaAPI.Controllers
 		}
 
 		[HttpPost]
-		[ProducesResponseType(StatusCodes.Status201Created)]
+        [Authorize(Roles = "admin")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status500InternalServerError)]
 		public async Task<ActionResult<APIResponse>> CreateVillaNumber([FromBody] VillaNumberCreateDTO createDTO)
@@ -131,7 +133,8 @@ namespace RentAVilla_VillaAPI.Controllers
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[HttpDelete("{id:int}", Name = "DeleteVillaNumber")]
+        [Authorize(Roles = "admin")]
+        [HttpDelete("{id:int}", Name = "DeleteVillaNumber")]
 		public async Task<ActionResult<APIResponse>> DeleteVillaNumber(int id)
 		{
 			try
@@ -162,7 +165,8 @@ namespace RentAVilla_VillaAPI.Controllers
 		[HttpPut("{id:int}", Name = "UpdateVillaNumber")]
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		public async Task<ActionResult<APIResponse>> UpdateVillaNumber(int id, [FromBody] VillaNumberUpdateDTO updateDTO)
+        [Authorize(Roles = "admin")]
+        public async Task<ActionResult<APIResponse>> UpdateVillaNumber(int id, [FromBody] VillaNumberUpdateDTO updateDTO)
 		{
 			try
 			{

@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using RentAVilla_Utility;
 using RentAVilla_Web.Models;
 using RentAVilla_Web.Models.Dto;
 using RentAVilla_Web.Services.IServices;
@@ -12,8 +13,6 @@ namespace RentAVilla_Web.Controllers
     {
         private readonly IVillaService _villaService;
         private readonly IMapper _mapper;
-        public int testVar = 0;
-
         public HomeController(IVillaService villaService, IMapper mapper)
         {
             _villaService = villaService;
@@ -24,12 +23,11 @@ namespace RentAVilla_Web.Controllers
         {
             List<VillaDTO> list = new();
 
-            var response = await _villaService.GetAllAsync<APIResponse>();
+            var response = await _villaService.GetAllAsync<APIResponse>(HttpContext.Session.GetString(SD.SessionToken));
             if (response != null && response.IsSuccess)
             {
                 list = JsonConvert.DeserializeObject<List<VillaDTO>>(Convert.ToString(response.Result));
             }
-
             return View(list);
         }
 
