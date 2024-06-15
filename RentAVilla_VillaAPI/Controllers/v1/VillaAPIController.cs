@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Asp.Versioning;
+using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.JsonPatch;
@@ -11,12 +12,15 @@ using RentAVilla_VillaAPI.Models;
 using RentAVilla_VillaAPI.Models.Dto;
 using RentAVilla_VillaAPI.Repository.RepositoryInterfaces;
 using System.Net;
+using System.Text.Json;
 
-namespace RentAVilla_VillaAPI.Controllers
+namespace RentAVilla_VillaAPI.Controllers.v1
 {
     // We can also use [Route("api/[controller]")] to use the controller name as the route]
-    [Route("api/villaAPI")]
+    [Route("api/v{version:apiVersion}/villaAPI")]
     [ApiController]
+    [ApiVersion("1.0")]
+
     public class VillaAPIController : ControllerBase
     {
         protected APIResponse _response;
@@ -28,19 +32,45 @@ namespace RentAVilla_VillaAPI.Controllers
         {
             _dbVilla = dbVilla;
             _mapper = mapper;
-            this._response = new();
+            _response = new();
         }
 
 
 
         [HttpGet]
+        [ResponseCache(CacheProfileName = "Default30")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<ActionResult<APIResponse>> GetVillas()
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        public async Task<ActionResult<APIResponse>> GetVillas([FromQuery(Name = "filterOccupancy")]int? occupancy, [FromQuery] string? search,
+                                                                 int pageSize = 0, int pageNumber = 1 )
         {
             try
             {
 
-                IEnumerable<Villa> villaList = await _dbVilla.GetAllAsync();
+                IEnumerable<Villa> villaList;
+                
+                if (occupancy > 0)
+                {
+                    villaList = await _dbVilla.GetAllAsync(u => u.Occupancy == occupancy, pageSize: pageSize, pageNumber: pageNumber);
+                }
+
+                else
+                {
+                    villaList = await _dbVilla.GetAllAsync(pageSize: pageSize, pageNumber: pageNumber);
+
+                }
+
+                if (!string.IsNullOrEmpty(search))
+                {
+                    villaList = villaList.Where(u => u.Name.ToLower().Contains(search));
+                }
+                Pagination pagination = new() 
+                { 
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                };
+                Response.Headers.Add("X-Pagination", JsonSerializer.Serialize(pagination));
                 _response.Result = _mapper.Map<List<VillaDTO>>(villaList);
                 _response.StatusCode = HttpStatusCode.OK;
                 return Ok(_response);

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Asp.Versioning;
+using Microsoft.AspNetCore.Mvc;
 using RentAVilla_VillaAPI.Models;
 using RentAVilla_VillaAPI.Models.Dto;
 using RentAVilla_VillaAPI.Repository.RepositoryInterfaces;
@@ -6,8 +7,10 @@ using System.Net;
 
 namespace RentAVilla_VillaAPI.Controllers
 {
-    [Route("api/UsersAuth")]
+    [Route("api/v{version:apiVersion}/UsersAuth")]
     [ApiController]
+    [ApiVersionNeutral]
+
     public class UsersController : Controller
     {
         private readonly IUserRepository _userRepo;
@@ -15,7 +18,7 @@ namespace RentAVilla_VillaAPI.Controllers
         public UsersController(IUserRepository userRepo)
         {
             _userRepo = userRepo;
-            this._response = new();
+            _response = new();
         }
 
         [HttpPost("login")]
@@ -25,7 +28,7 @@ namespace RentAVilla_VillaAPI.Controllers
             if (loginResponse.User == null || string.IsNullOrEmpty(loginResponse.Token))
             {
                 _response.StatusCode = HttpStatusCode.BadRequest;
-                _response.IsSuccess= false;
+                _response.IsSuccess = false;
                 _response.ErrorMessages.Add("Username or password is incorrect");
                 return BadRequest(_response);
             }
@@ -44,7 +47,7 @@ namespace RentAVilla_VillaAPI.Controllers
                 _response.StatusCode = HttpStatusCode.BadRequest;
                 _response.IsSuccess = false;
                 _response.ErrorMessages.Add("Username already exists");
-                return BadRequest(_response);   
+                return BadRequest(_response);
             }
 
             var user = await _userRepo.Register(model);
